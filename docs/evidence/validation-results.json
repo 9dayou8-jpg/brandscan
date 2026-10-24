@@ -1,0 +1,337 @@
+{
+  "generated_at": "2026-10-24T09:21:35.697287+00:00",
+  "rulebook_version": "0.3.0",
+  "purpose": "acquisition",
+  "cases": [
+    {
+      "fixture": "normal-page.html",
+      "label": "정상 페이지",
+      "analysis_metadata": {
+        "analysis_scope": "single_url",
+        "site_wide_inference": false,
+        "requested_url": "https://fixture.example/normal",
+        "final_url": "https://fixture.example/normal",
+        "page_type": {
+          "predicted": "unknown",
+          "selected": "unknown",
+          "source": "auto",
+          "confidence": "medium"
+        },
+        "marketing_objective": "acquisition",
+        "collection_method": [
+          "server_http_fetch",
+          "html_parser"
+        ],
+        "parser_version": "0.1.0",
+        "rulebook_version": "0.3.0"
+      },
+      "observations": {
+        "title": "BrandScan 정상 페이지",
+        "description_present": true,
+        "h1_count": 1,
+        "missing_alt": 0,
+        "canonical": "https://fixture.example/normal",
+        "martech_platforms": [
+          "Google"
+        ]
+      },
+      "confirmed_issue_count": 0,
+      "additional_review_count": 0,
+      "confirmed_issues": [],
+      "additional_review_items": [],
+      "geo_evaluation": {
+        "geo_readiness": {
+          "status": "ready",
+          "confirmed_criteria": 3,
+          "total_criteria": 3
+        },
+        "ai_search_performance": {
+          "status": "not_measured",
+          "value": null
+        },
+        "criteria": [
+          {
+            "criterion_id": "GEO-QUESTION-001",
+            "result": "confirmed",
+            "evidence_refs": [
+              "heading-001"
+            ],
+            "reason": "질문형 heading 확인"
+          },
+          {
+            "criterion_id": "GEO-CONTEXT-001",
+            "result": "confirmed",
+            "evidence_refs": [
+              "text-001"
+            ],
+            "reason": "설명형 본문 확인"
+          },
+          {
+            "criterion_id": "GEO-FAQ-001",
+            "result": "confirmed",
+            "evidence_refs": [
+              "jsonld-001"
+            ],
+            "reason": "FAQPage 구조 확인"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "heading-001",
+            "source": "heading",
+            "field": "h2",
+            "quote": "자주 묻는 질문"
+          },
+          {
+            "evidence_id": "text-001",
+            "source": "body_text",
+            "field": "content",
+            "quote": "BrandScan 정상 페이지 {\"@type\":\"FAQPage\",\"mainEntity\":[]} 브랜드 웹사이트 진단 자주 묻는 질문 BrandScan은 브랜드 웹사이트의 기술 구조와 콘텐츠를 확인하고, 현재 발견된 문제와 개선 방향을 설명합니다. 사용자는 공개 URL을 입력해 분석 범위와 우선순위를 확인할 수 있습니다. "
+          },
+          {
+            "evidence_id": "jsonld-001",
+            "source": "json_ld",
+            "field": "@type",
+            "quote": "FAQPage"
+          }
+        ]
+      }
+    },
+    {
+      "fixture": "missing-page.html",
+      "label": "누락 페이지",
+      "analysis_metadata": {
+        "analysis_scope": "single_url",
+        "site_wide_inference": false,
+        "requested_url": "https://fixture.example/missing",
+        "final_url": "https://fixture.example/missing",
+        "page_type": {
+          "predicted": "unknown",
+          "selected": "unknown",
+          "source": "auto",
+          "confidence": "medium"
+        },
+        "marketing_objective": "acquisition",
+        "collection_method": [
+          "server_http_fetch",
+          "html_parser"
+        ],
+        "parser_version": "0.1.0",
+        "rulebook_version": "0.3.0"
+      },
+      "observations": {
+        "title": "BrandScan 누락 페이지",
+        "description_present": false,
+        "h1_count": 1,
+        "missing_alt": 1,
+        "canonical": "https://fixture.example/missing",
+        "martech_platforms": []
+      },
+      "confirmed_issue_count": 2,
+      "additional_review_count": 2,
+      "confirmed_issues": [
+        {
+          "id": "seo-description",
+          "title": "Meta Description이 없습니다",
+          "score": 22,
+          "evidence": "description 메타요소가 발견되지 않았습니다."
+        },
+        {
+          "id": "seo-alt",
+          "title": "이미지 alt가 누락되었습니다",
+          "score": 15,
+          "evidence": "이미지 1개에서 alt가 확인되지 않았습니다."
+        }
+      ],
+      "additional_review_items": [
+        {
+          "id": "geo-question",
+          "title": "질문형 콘텐츠 구조가 부족합니다",
+          "evidence": "FAQ 또는 질문형 heading을 확인하지 못했습니다."
+        },
+        {
+          "id": "martech-ga4",
+          "title": "GA4 설치 여부를 확인할 수 없습니다",
+          "evidence": "공개 HTML에서 GA4 단서를 찾지 못했습니다."
+        }
+      ],
+      "geo_evaluation": {
+        "geo_readiness": {
+          "status": "additional_review",
+          "confirmed_criteria": 0,
+          "total_criteria": 3
+        },
+        "ai_search_performance": {
+          "status": "not_measured",
+          "value": null
+        },
+        "criteria": [
+          {
+            "criterion_id": "GEO-QUESTION-001",
+            "result": "additional_review",
+            "evidence_refs": [
+              "heading-001"
+            ],
+            "reason": "질문형 heading이 공개 HTML에서 확인되지 않음"
+          },
+          {
+            "criterion_id": "GEO-CONTEXT-001",
+            "result": "additional_review",
+            "evidence_refs": [
+              "text-001"
+            ],
+            "reason": "충분한 설명형 본문이 확인되지 않음"
+          },
+          {
+            "criterion_id": "GEO-FAQ-001",
+            "result": "additional_review",
+            "evidence_refs": [
+              "jsonld-001"
+            ],
+            "reason": "FAQPage 구조가 공개 HTML에서 확인되지 않음"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "heading-001",
+            "source": "heading",
+            "field": "heading",
+            "quote": "질문형 heading 미검출"
+          },
+          {
+            "evidence_id": "text-001",
+            "source": "body_text",
+            "field": "content",
+            "quote": "BrandScan 누락 페이지 서비스 소개 서비스를 간단히 소개하지만 고객 질문과 선택 기준을 충분히 설명하지 않습니다."
+          },
+          {
+            "evidence_id": "jsonld-001",
+            "source": "json_ld",
+            "field": "@type",
+            "quote": "FAQPage 미검출"
+          }
+        ]
+      }
+    },
+    {
+      "fixture": "suspicious-page.html",
+      "label": "의심 페이지",
+      "analysis_metadata": {
+        "analysis_scope": "single_url",
+        "site_wide_inference": false,
+        "requested_url": "https://fixture.example/suspicious",
+        "final_url": "https://fixture.example/suspicious",
+        "page_type": {
+          "predicted": "unknown",
+          "selected": "unknown",
+          "source": "auto",
+          "confidence": "medium"
+        },
+        "marketing_objective": "acquisition",
+        "collection_method": [
+          "server_http_fetch",
+          "html_parser"
+        ],
+        "parser_version": "0.1.0",
+        "rulebook_version": "0.3.0"
+      },
+      "observations": {
+        "title": "BrandScan 의심 페이지",
+        "description_present": false,
+        "h1_count": 2,
+        "missing_alt": 0,
+        "canonical": "https://other.example/canonical",
+        "martech_platforms": []
+      },
+      "confirmed_issue_count": 1,
+      "additional_review_count": 4,
+      "confirmed_issues": [
+        {
+          "id": "seo-description",
+          "title": "Meta Description이 없습니다",
+          "score": 22,
+          "evidence": "description 메타요소가 발견되지 않았습니다."
+        }
+      ],
+      "additional_review_items": [
+        {
+          "id": "geo-question",
+          "title": "질문형 콘텐츠 구조가 부족합니다",
+          "evidence": "FAQ 또는 질문형 heading을 확인하지 못했습니다."
+        },
+        {
+          "id": "seo-canonical-suspicious",
+          "title": "Canonical 대상이 다른 호스트를 가리킵니다",
+          "evidence": "관찰된 canonical: https://other.example/canonical"
+        },
+        {
+          "id": "seo-h1-structure",
+          "title": "H1 구조를 추가 확인해야 합니다",
+          "evidence": "H1 2개가 확인되었습니다."
+        },
+        {
+          "id": "martech-ga4",
+          "title": "GA4 설치 여부를 확인할 수 없습니다",
+          "evidence": "공개 HTML에서 GA4 단서를 찾지 못했습니다."
+        }
+      ],
+      "geo_evaluation": {
+        "geo_readiness": {
+          "status": "partial",
+          "confirmed_criteria": 1,
+          "total_criteria": 3
+        },
+        "ai_search_performance": {
+          "status": "not_measured",
+          "value": null
+        },
+        "criteria": [
+          {
+            "criterion_id": "GEO-QUESTION-001",
+            "result": "additional_review",
+            "evidence_refs": [
+              "heading-001"
+            ],
+            "reason": "질문형 heading이 공개 HTML에서 확인되지 않음"
+          },
+          {
+            "criterion_id": "GEO-CONTEXT-001",
+            "result": "confirmed",
+            "evidence_refs": [
+              "text-001"
+            ],
+            "reason": "설명형 본문 확인"
+          },
+          {
+            "criterion_id": "GEO-FAQ-001",
+            "result": "additional_review",
+            "evidence_refs": [
+              "jsonld-001"
+            ],
+            "reason": "FAQPage 구조가 공개 HTML에서 확인되지 않음"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "heading-001",
+            "source": "heading",
+            "field": "heading",
+            "quote": "질문형 heading 미검출"
+          },
+          {
+            "evidence_id": "text-001",
+            "source": "body_text",
+            "field": "content",
+            "quote": "BrandScan 의심 페이지 {\"@type\":\"Product\",\"name\":\"BrandScan\"} 브랜드 진단 서비스 안내 서로 다른 핵심 주제가 같은 페이지에 섞여 있고 대표 URL의 기준을 추가 확인해야 합니다."
+          },
+          {
+            "evidence_id": "jsonld-001",
+            "source": "json_ld",
+            "field": "@type",
+            "quote": "FAQPage 미검출"
+          }
+        ]
+      }
+    }
+  ]
+}

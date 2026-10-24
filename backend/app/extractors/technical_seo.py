@@ -82,11 +82,15 @@ def extract_technical_seo(html: str, page_url: str) -> dict[str, object]:
         target = urlparse(urljoin(page_url, href))
         if target.scheme in {"http", "https"} and target.netloc == base_host:
             internal_links += 1
+    canonical_host_matches = None
+    if parser.canonical:
+        canonical_host_matches = urlparse(urljoin(page_url, parser.canonical)).netloc == base_host
     return {
         "title": parser.title,
         "description": parser.description,
         "headings": parser.headings,
         "canonical": parser.canonical,
+        "canonical_host_matches": canonical_host_matches,
         "robots": parser.robots,
         "json_ld_types": sorted(set(parser.json_ld_types)),
         "images": {"total": parser.images_total, "missing_alt": parser.images_missing_alt},

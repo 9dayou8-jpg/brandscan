@@ -57,6 +57,21 @@ python3 -m pytest -q
 cp .env.example .env
 ```
 
+## 검증 증거 생성
+
+정상·누락·의심 fixture를 실행하고 결과 JSON과 Markdown 보고서를 생성합니다.
+
+```bash
+PYTHONPATH=. python3 scripts/generate_validation_evidence.py
+```
+
+생성 파일:
+
+```text
+docs/evidence/validation-results.json
+docs/evidence/validation-results.md
+```
+
 ## MVP 제한사항
 
 - 공개 단일 URL만 분석합니다.

@@ -12,11 +12,14 @@
 - 공개 URL 검증 및 HTML 수집기
 - Technical SEO 추출기
 - GA4·GTM·Google Ads·Meta Pixel·TikTok Pixel 단서 탐지기
-- GEO 질문형·설명형·FAQ 구조 점검
-- 영향도 × 시급성 × 실행 난이도 기반 TOP 3 우선순위
+- Google·Meta·TikTok·Naver·Kakao·Pinterest·LinkedIn·Snapchat·Criteo·Microsoft Ads·당근·토스 매체 인벤토리
+- GEO 질문형·설명형·FAQ 구조 점검 및 근거 문장 연결
+- 영향도 × 4 + 시급성 × 3 + 개선 용이성 × 1 기반 TOP 3 우선순위
+- 확정 개선 과제와 추가 검증 필요 항목 분리
 - FastAPI `/api/analyze`
-- URL 입력·분석 결과·TOP 3·근거 상세 대시보드
+- URL 입력·분석 목적·페이지 유형 선택이 가능한 대시보드
 - README, LICENSE, .gitignore, .env.example
+- fixture 기반 검증 결과 JSON·Markdown 보고서
 
 ## 3. 사람이 확인하거나 수정한 것
 
@@ -41,9 +44,12 @@
 
 ## 6. 현재 검증 결과
 
-- 자동 테스트: 14개 통과
+- 자동 테스트: 43개 통과
+- fixture 검증: 정상·누락·의심 3건
+- 생성된 검증 보고서: `docs/evidence/validation-results.json`, `docs/evidence/validation-results.md`
 - API health check: 성공
 - 실제 `https://example.com` 분석: 성공
 - Technical SEO·MarTech·GEO 결과 반환: 확인
-- TOP 3 개선 과제 반환: 확인
-- 브라우저 데모 화면: 확인
+- GEO 근거 참조와 AI 검색 성과 미측정 분리: 확인
+- 확정 개선 과제·추가 검증 항목 분리: 확인
+- 브라우저 대시보드·GEO 탭·매체 목록: 확인

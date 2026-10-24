@@ -15,6 +15,8 @@ ISSUE_GROUPS = {
     "martech-ga4": ("martech-measurement-001", "martech-validation-001"),
     "geo-question": ("geo-structure-001", "geo-content-001"),
     "geo-context": ("geo-structure-001", "geo-content-001"),
+    "seo-canonical-suspicious": ("canonical-ambiguity-001", "canonical-review-001"),
+    "seo-h1-structure": ("heading-structure-001", "heading-review-001"),
 }
 
 
@@ -84,6 +86,10 @@ def build_issues(technical: dict[str, object], martech: dict[str, object], geo: 
         issues.append(_issue("seo-title", "technical_seo", "페이지 제목이 없습니다", "title 메타요소가 발견되지 않았습니다.", "페이지의 핵심 주제를 담은 title을 추가합니다.", 3, 3, 1, marketing_objective=marketing_objective))
     if not technical.get("description"):
         issues.append(_issue("seo-description", "technical_seo", "Meta Description이 없습니다", "description 메타요소가 발견되지 않았습니다.", "페이지 가치와 핵심 내용을 설명하는 Meta Description을 추가합니다.", 2, 3, 1, marketing_objective=marketing_objective))
+    if technical.get("canonical_host_matches") is False:
+        issues.append(_issue("seo-canonical-suspicious", "technical_seo", "Canonical 대상이 다른 호스트를 가리킵니다", f"관찰된 canonical: {technical.get('canonical')}", "페이지 유형과 대표 URL 관계를 확인한 뒤 canonical 설정을 재검토합니다.", 2, 2, 2, status="suspicious", marketing_objective=marketing_objective))
+    if len(technical.get("headings", {}).get("h1", [])) > 1:
+        issues.append(_issue("seo-h1-structure", "technical_seo", "H1 구조를 추가 확인해야 합니다", f"H1 {len(technical['headings']['h1'])}개가 확인되었습니다.", "페이지 유형과 섹션 구조를 확인해 핵심 주제 계층을 정리합니다.", 2, 2, 2, status="suspicious", marketing_objective=marketing_objective))
     images = technical.get("images", {})
     if isinstance(images, dict) and images.get("missing_alt", 0):
         issues.append(_issue("seo-alt", "technical_seo", "이미지 alt가 누락되었습니다", f"이미지 {images['missing_alt']}개에서 alt가 확인되지 않았습니다.", "이미지의 의미를 설명하는 alt 텍스트를 추가합니다.", 2, 2, 1, marketing_objective=marketing_objective))
