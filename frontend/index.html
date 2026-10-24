@@ -3,79 +3,95 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BrandScan · 종합 진단 대시보드</title>
+  <title>BrandScan · 브랜드 인텔리전스</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="dash">
-    <header class="hero">
-      <div class="dash-top">
-        <div>
-          <p class="eyebrow">BRANDSCAN · BRAND WEBSITE DIAGNOSTIC</p>
-          <h1>종합 진단 대시보드</h1>
-          <p class="meta">공개 페이지에서 확인 가능한 근거 기반 진단 · 실제 검색 노출 성과는 포함하지 않음</p>
-        </div>
-        <div class="brand-stamp">BRANDSCAN</div>
-      </div>
-      <form id="analyze-form" class="url-form">
-        <label for="url">분석할 공개 웹페이지 URL</label>
-        <div class="input-row">
-          <input id="url" name="url" type="url" placeholder="https://example.com" required>
-          <button type="submit">분석 시작</button>
-        </div>
-        <div class="context-row">
-          <label>분석 목적
-            <select name="marketing_objective">
-              <option value="brand_awareness">브랜드 인지도</option>
-              <option value="acquisition" selected>신규 고객 유입</option>
-              <option value="conversion">구매 전환</option>
-              <option value="lead_generation">리드 확보</option>
-            </select>
-          </label>
-          <label>페이지 유형 수정
-            <select name="page_type">
-              <option value="">자동 추정 사용</option>
-              <option value="homepage">홈페이지</option>
-              <option value="service">서비스</option>
-              <option value="product">상품</option>
-              <option value="landing">랜딩</option>
-              <option value="blog">블로그</option>
-              <option value="article">아티클</option>
-              <option value="campaign">캠페인</option>
-            </select>
-          </label>
-        </div>
-        <p id="status" class="status" role="status"></p>
-      </form>
-    </header>
-
-    <section id="results" class="results" hidden>
-      <div class="result-heading">
-        <div>
-          <p class="eyebrow">ANALYSIS RESULT</p>
-          <h2 id="result-url"></h2>
-          <p id="analysis-meta" class="meta"></p>
-        </div>
-        <button id="download-report" class="secondary" type="button">PDF로 저장</button>
-      </div>
-
-      <div id="summary-cards" class="summary-grid"></div>
-
-      <div class="section-title"><h2>우선 개선 과제 TOP 3</h2><span>(영향도 × 4) + (시급성 × 3) + (개선 용이성 × 1)</span></div>
-      <div id="priority-list" class="issues"></div>
-      <div id="review-list" class="review-list" hidden></div>
-
-      <nav class="tabs" role="tablist" aria-label="진단 상세 카테고리">
-        <button class="tab active" role="tab" aria-selected="true" data-tab="all" type="button">전체 요약</button>
-        <button class="tab" role="tab" aria-selected="false" data-tab="martech" type="button">MarTech</button>
-        <button class="tab" role="tab" aria-selected="false" data-tab="seo" type="button">Technical SEO</button>
-        <button class="tab" role="tab" aria-selected="false" data-tab="geo" type="button">GEO · 콘텐츠</button>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="주요 메뉴">
+      <div class="sidebar-brand"><span class="brand-mark">◈</span><strong>BrandScan</strong></div>
+      <nav class="primary-nav">
+        <a class="nav-item active" href="#analysis"><span>⌂</span>분석하기</a>
+        <a class="nav-item" href="#dashboard"><span>◌</span>대시보드</a>
+        <a class="nav-item" href="#history"><span>▣</span>분석 기록</a>
+        <a class="nav-item" href="#guide"><span>?</span>가이드</a>
+        <a class="nav-item" href="#cases"><span>◇</span>사례</a>
       </nav>
-      <section id="detail-panels" class="panels"></section>
-    </section>
-  </main>
+      <div class="project-block">
+        <div class="project-heading"><span>내 프로젝트</span><button type="button" aria-label="프로젝트 추가">＋</button></div>
+        <a class="project-item active" href="#example"><span class="project-dot"></span>example.com</a>
+        <a class="project-item" href="#brand"><span class="project-dot"></span>brand.com</a>
+        <a class="project-item" href="#service"><span class="project-dot"></span>service.co.kr</a>
+      </div>
+      <div class="sidebar-tip"><span class="tip-icon">✦</span><strong>더 정확한 분석을 위해<br>마케팅 목적을 설정해보세요.</strong><button type="button" onclick="document.querySelector('[name=marketing_objective]').focus()">목적 설정하기 →</button></div>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <div></div>
+        <div class="topbar-actions"><button type="button" class="icon-button" aria-label="도움말">?</button><span class="avatar">D</span><span class="avatar-chevron">⌄</span></div>
+      </header>
+
+      <main class="main-content" id="analysis">
+        <header class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">BRANDSCAN</p>
+            <h1>우리 브랜드의<br><em>발견 가능성</em>을 진단해보세요.</h1>
+            <p class="hero-description">SEO, GEO, MarTech까지 한 번에 분석하고,<br>지금 가장 중요한 개선 포인트를 확인하세요.</p>
+            <form id="analyze-form" class="url-form">
+              <div class="url-input-wrap"><span class="input-icon">⌕</span><input id="url" name="url" type="url" placeholder="https://example.com" required><button type="submit">분석 시작 <span>→</span></button></div>
+              <div class="context-row">
+                <label>분석 목적
+                  <select name="marketing_objective">
+                    <option value="brand_awareness">◉　브랜드 인지도</option>
+                    <option value="acquisition" selected>◉　신규 고객 유입</option>
+                    <option value="conversion">♢　구매 전환</option>
+                    <option value="lead_generation">♧　리드 확보</option>
+                  </select>
+                </label>
+                <label>페이지 유형 수정
+                  <select name="page_type">
+                    <option value="">자동 추정 사용</option><option value="homepage">홈페이지</option><option value="service">서비스</option><option value="product">상품</option><option value="landing">랜딩</option><option value="blog">블로그</option><option value="article">아티클</option><option value="campaign">캠페인</option>
+                  </select>
+                </label>
+              </div>
+              <p id="status" class="status" role="status"></p>
+            </form>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="visual-window"><div class="window-dots"><i></i><i></i><i></i></div><div class="visual-line short"></div><div class="visual-line"></div><div class="visual-chart"><span></span><span></span><span></span><span></span><span></span></div></div>
+            <div class="signal-card seo"><b>▣　SEO</b><small>검색 노출 최적화</small></div>
+            <div class="signal-card geo"><b>◉　GEO</b><small>AI 검색 준비도</small></div>
+            <div class="signal-card martech"><b>▣　MarTech</b><small>마케팅 데이터 점검</small></div>
+          </div>
+          <aside class="hero-note"><span>✦</span><h3>AI가 찾아주는<br>우리 브랜드의 새로운 기회</h3><p>웹사이트의 기술 환경부터 콘텐츠 구조까지 종합적으로 분석해, 지금 가장 중요한 개선 포인트를 제안합니다.</p></aside>
+        </header>
+
+        <section id="results" class="results" hidden>
+          <div class="analysis-bar">
+            <div class="analysis-identity"><span class="analysis-logo">◈</span><div><h2 id="result-url"></h2><p id="analysis-meta" class="meta"></p></div></div>
+            <div class="analysis-actions"><button type="button" class="outline-button">♧　공유하기</button><button id="download-report" class="dark-button" type="button">▣　PDF 다운로드</button></div>
+          </div>
+          <div class="results-layout">
+            <aside class="section-nav" aria-label="분석 섹션">
+              <button class="section-nav-item active" type="button">01.　핵심 요약</button><button class="section-nav-item" type="button">02.　주요 개선 과제</button><button class="section-nav-item" type="button">03.　SEO 진단</button><button class="section-nav-item" type="button">04.　GEO 진단</button><button class="section-nav-item" type="button">05.　MarTech 진단</button><button class="section-nav-item" type="button">06.　상세 결과</button><button class="section-nav-item" type="button">07.　다음 단계</button>
+            </aside>
+            <div class="results-body">
+              <div class="section-heading"><div><p class="eyebrow dark-eyebrow">01 · SUMMARY</p><h2>종합 진단 결과</h2></div><span class="formula-note">근거 기반 규칙 점수</span></div>
+              <div id="summary-cards" class="summary-grid"></div>
+              <div class="section-title"><h2>우선 개선 과제 TOP 3</h2><span>(영향도 × 4) + (시급성 × 3) + (개선 용이성 × 1)</span></div>
+              <div id="priority-list" class="issues"></div><div id="review-list" class="review-list" hidden></div>
+              <nav class="tabs" role="tablist" aria-label="진단 상세 카테고리"><button class="tab active" role="tab" aria-selected="true" data-tab="all" type="button">전체 요약</button><button class="tab" role="tab" aria-selected="false" data-tab="martech" type="button">MarTech</button><button class="tab" role="tab" aria-selected="false" data-tab="seo" type="button">Technical SEO</button><button class="tab" role="tab" aria-selected="false" data-tab="geo" type="button">GEO · 콘텐츠</button></nav>
+              <section id="detail-panels" class="panels"></section>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
