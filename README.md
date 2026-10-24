@@ -38,8 +38,10 @@ http://127.0.0.1:8000/frontend/index.html
 ```bash
 curl -X POST http://127.0.0.1:8010/api/analyze \
   -H 'Content-Type: application/json' \
-  -d '{"url":"https://example.com"}'
+  -d '{"url":"https://example.com","capture_runtime":true}'
 ```
+
+`capture_runtime: true`를 사용하면 Playwright가 실제 브라우저에서 발생한 네트워크 요청을 수집해 동적 로딩 태그와 이벤트를 분석합니다. 배포 환경에서는 Playwright Chromium 실행 파일을 함께 설치해야 합니다.
 
 ## 테스트
 
