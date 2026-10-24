@@ -3,86 +3,107 @@ const form = document.querySelector('#analyze-form');
 const statusEl = document.querySelector('#status');
 const results = document.querySelector('#results');
 const resultUrl = document.querySelector('#result-url');
+const analysisMeta = document.querySelector('#analysis-meta');
 const summaryCards = document.querySelector('#summary-cards');
 const priorityList = document.querySelector('#priority-list');
-const detail = document.querySelector('#detail');
+const detailPanels = document.querySelector('#detail-panels');
 const reportButton = document.querySelector('#download-report');
 let latestResult = null;
 
-const labels = {
-  confirmed: '확인',
-  partial: '일부 확인',
-  suspicious: '의심',
-  unknown: '미확인',
-};
+const labels = { confirmed: '확인', partial: '일부 확인', suspicious: '의심', unknown: '미확인' };
+const priorityLabels = { high: '높음', medium: '중간', low: '낮음' };
+const areaLabels = { martech: 'MarTech', technical_seo: 'Technical SEO', geo: 'GEO · 콘텐츠' };
 
 function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 }
+
+function scoreFor(result, area) {
+  const count = result.issues.filter(issue => issue.area === area).length;
+  return Math.max(38, 100 - count * 18);
+}
+
+function scoreTone(score) { return score >= 75 ? 'good' : score >= 55 ? 'warn' : 'bad'; }
 
 function renderSummary(result) {
   const seo = result.technical_seo;
   const tools = result.martech.tools;
   const martechConfirmed = Object.values(tools).filter(tool => tool.status === 'confirmed').length;
   const geoConfirmed = [result.geo.has_question_heading, result.geo.has_explanatory_content, result.geo.has_faq_schema].filter(Boolean).length;
-  summaryCards.innerHTML = [
-    ['Technical SEO', seo.description && seo.title ? '기본 요소 확인' : '개선 필요', `${seo.headings.h1.length}개 H1 · alt 누락 ${seo.images.missing_alt}개`],
-    ['MarTech', martechConfirmed ? `${martechConfirmed}개 감지` : '추가 확인 필요', '스크립트 단서 기준'],
-    ['GEO', `${geoConfirmed}/3 요소 확인`, '질문형·설명형·FAQ 구조'],
-  ].map(([title, value, note]) => `<article class="summary-card"><p>${esc(title)}</p><strong>${esc(value)}</strong><span>${esc(note)}</span></article>`).join('');
+  const cards = [
+    { title: 'MarTech · 트래킹', score: scoreFor(result, 'martech'), note: `스크립트 ${martechConfirmed}개 감지 · 확인 상태와 미확인 항목 분리`, area: 'martech' },
+    { title: 'Technical SEO', score: scoreFor(result, 'technical_seo'), note: `H1 ${seo.headings.h1.length}개 · 이미지 alt 누락 ${seo.images.missing_alt}개`, area: 'technical_seo' },
+    { title: 'GEO · 콘텐츠', score: scoreFor(result, 'geo'), note: `${geoConfirmed}/3 요소 확인 · 질문형·설명형·FAQ 구조`, area: 'geo' },
+  ];
+  summaryCards.innerHTML = cards.map(card => `<article class="summary">
+    <div class="summary-head"><h3>${esc(card.title)}</h3><div class="score ${scoreTone(card.score)}">${card.score}</div></div>
+    <div class="bar"><span class="${scoreTone(card.score)}" style="width:${card.score}%"></span></div>
+    <p>${esc(card.note)}</p>
+  </article>`).join('');
 }
 
 function renderPriorities(items) {
-  priorityList.innerHTML = items.map((item, index) => `<button class="priority-card" data-index="${index}" type="button">
-    <span class="priority-number">0${index + 1}</span>
-    <span class="priority-area">${esc(item.area)}</span>
-    <h3>${esc(item.title)}</h3>
-    <span class="priority-status status-${esc(item.status)}">${esc(labels[item.status] || item.status)}</span>
-    <p>${esc(item.evidence)}</p>
-  </button>`).join('');
-  priorityList.querySelectorAll('.priority-card').forEach(card => card.addEventListener('click', () => showDetail(items[Number(card.dataset.index)])));
+  priorityList.innerHTML = items.map((item, index) => `<article class="issue" role="button" tabindex="0" aria-expanded="false" data-index="${index}">
+    <div class="rank">${index + 1}</div>
+    <div><h3>${esc(item.title)} <span class="chevron">⌄</span></h3>
+      <p class="issue-hint">클릭해서 문제의 근거와 개선 방향 보기</p>
+      <div class="issue-detail"><p><b>문제점</b> · ${esc(item.problem)}</p><p><b>발견 근거</b> · ${esc(item.evidence)}</p><p><b>개선 방향</b> · ${esc(item.recommendation)}</p></div>
+    </div>
+    <div class="priority ${item.priority === 'high' ? 'p1' : 'p2'}">${esc(priorityLabels[item.priority] || item.priority)} · ${esc(areaLabels[item.area] || item.area)}</div>
+  </article>`).join('');
+  priorityList.querySelectorAll('.issue').forEach(issue => {
+    const toggle = () => {
+      const open = issue.classList.toggle('open');
+      issue.setAttribute('aria-expanded', String(open));
+      const item = items[Number(issue.dataset.index)];
+      switchTab(item.area);
+    };
+    issue.addEventListener('click', toggle);
+    issue.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(); } });
+  });
 }
 
-function showDetail(item) {
-  detail.hidden = false;
-  detail.innerHTML = `<p class="eyebrow">EVIDENCE DETAIL</p><h2>${esc(item.title)}</h2>
-    <dl><dt>상태</dt><dd>${esc(labels[item.status] || item.status)}</dd><dt>발견 근거</dt><dd>${esc(item.evidence)}</dd><dt>개선 방향</dt><dd>${esc(item.recommendation)}</dd><dt>우선순위 산정</dt><dd>${esc(item.score_reason)}</dd></dl>`;
-  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function stateRow(label, status) {
+  const safeStatus = labels[status] || status;
+  const tone = status === 'confirmed' ? 'ok' : status === 'unknown' ? 'na' : 'warn';
+  return `<li><span class="state"><i class="dot ${tone}"></i>${esc(label)} · ${esc(safeStatus)}</span></li>`;
+}
+
+function renderPanels(result) {
+  const tools = result.martech.tools;
+  const seo = result.technical_seo;
+  const geo = result.geo;
+  const geoIssues = result.issues.filter(issue => issue.area === 'geo');
+  detailPanels.innerHTML = `
+    <div id="panel-all" class="panel" role="tabpanel"><div class="detail-grid">
+      <div class="detail"><h4>MarTech 확인 상태</h4><ul>${Object.entries(tools).map(([name, data]) => stateRow(name.replace('_', ' ').toUpperCase(), data.status)).join('')}</ul></div>
+      <div class="detail"><h4>SEO 핵심 상태</h4><ul>${stateRow('Title', seo.title ? 'confirmed' : 'unknown')}${stateRow('Meta Description', seo.description ? 'confirmed' : 'partial')}${stateRow('Canonical', seo.canonical ? 'confirmed' : 'unknown')}${stateRow('JSON-LD', seo.json_ld_types.length ? 'confirmed' : 'unknown')}</ul></div>
+      <div class="detail"><h4>GEO 콘텐츠 상태</h4><ul>${stateRow('질문형 heading', geo.has_question_heading ? 'confirmed' : 'unknown')}${stateRow('설명형 콘텐츠', geo.has_explanatory_content ? 'confirmed' : 'unknown')}${stateRow('FAQ Schema', geo.has_faq_schema ? 'confirmed' : 'unknown')}</ul></div>
+    </div></div>
+    <div id="panel-martech" class="panel" role="tabpanel" hidden><div class="detail-note"><strong>MarTech·트래킹 체크리스트</strong><br>설치 스크립트 감지와 실제 추적 요청을 분리합니다. 확인하지 못한 항목은 실패가 아니라 <strong>미확인</strong>으로 표시합니다.</div><div class="checklist">${Object.entries(tools).map(([name, data]) => `<div class="check-row"><span class="check-box ${data.status === 'confirmed' ? 'ok' : data.status === 'unknown' ? 'na' : 'warn'}">${data.status === 'confirmed' ? '✓' : data.status === 'unknown' ? '?' : '!'}</span><span>${esc(name.replace('_', ' ').toUpperCase())} 스크립트 단서</span><span class="check-status">${esc(labels[data.status] || data.status)}</span></div>`).join('')}</div><p class="check-caption">상태 기준 · 확인: 공개 HTML에서 단서 감지 · 일부 확인/의심: 추가 검증 필요 · 미확인: 공개 페이지에서 판단할 수 없음</p></div>
+    <div id="panel-technical_seo" class="panel" role="tabpanel" hidden><div class="detail-note"><strong>Technical SEO 상세</strong><br>페이지 HTML에서 직접 확인한 구조적 신호입니다. 검색 순위·트래픽·색인 성과를 측정한 결과가 아닙니다.</div><div class="evidence"><div><b>Title</b>${esc(seo.title || '미확인')}</div><div><b>Meta Description</b>${esc(seo.description || '미확인')}</div><div><b>H1~H3</b>H1 ${seo.headings.h1.length}개 · H2 ${seo.headings.h2.length}개 · H3 ${seo.headings.h3.length}개</div><div><b>이미지 alt</b>전체 ${seo.images.total}개 · 누락 ${seo.images.missing_alt}개</div><div><b>Canonical</b>${esc(seo.canonical || '미확인')}</div><div><b>JSON-LD</b>${seo.json_ld_types.length ? esc(seo.json_ld_types.join(', ')) : '미검출'}</div></div></div>
+    <div id="panel-geo" class="panel" role="tabpanel" hidden><div class="detail-note"><strong>GEO·콘텐츠 개선안</strong><br>AI 검색 노출이나 인용 성과가 아니라, 공개 페이지의 콘텐츠 구조를 바탕으로 작성한 개선 초안입니다.</div><div class="recommend-grid">${geoIssues.length ? geoIssues.map((issue, i) => `<div class="recommend"><h4>소재 ${i + 1} · ${esc(issue.title)}</h4><p><strong>개선 방향</strong> · ${esc(issue.recommendation)}</p><div class="copy-example"><span class="copy-label">근거</span>${esc(issue.evidence)}</div></div>`).join('') : '<div class="recommend"><h4>현재 확인된 GEO 개선 과제 없음</h4><p>추가 확인이 필요한 콘텐츠 구조를 계속 점검합니다.</p></div>'}</div></div>`;
+  document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(tab => { const active = tab.dataset.tab === name; tab.classList.toggle('active', active); tab.setAttribute('aria-selected', String(active)); });
+  const panelName = name === 'seo' ? 'technical_seo' : name;
+  document.querySelectorAll('.panel').forEach(panel => { panel.hidden = panel.id !== `panel-${panelName}`; });
 }
 
 form.addEventListener('submit', async event => {
   event.preventDefault();
   const url = new FormData(form).get('url');
-  statusEl.textContent = '페이지를 분석하고 있습니다...';
-  statusEl.className = 'status loading';
-  results.hidden = true;
+  statusEl.textContent = '페이지를 분석하고 있습니다...'; statusEl.className = 'status loading'; results.hidden = true;
   try {
     const response = await fetch(`${API_BASE}/api/analyze`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({url}) });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.detail || '분석에 실패했습니다.');
-    latestResult = payload;
-    resultUrl.textContent = payload.final_url;
-    renderSummary(payload);
-    renderPriorities(payload.top_priorities);
-    detail.hidden = true;
-    results.hidden = false;
-    statusEl.textContent = '분석이 완료되었습니다.';
-    statusEl.className = 'status success';
-  } catch (error) {
-    statusEl.textContent = error.message;
-    statusEl.className = 'status error';
-  }
+    latestResult = payload; resultUrl.textContent = payload.final_url; analysisMeta.textContent = `HTTP ${payload.status_code} · HTML ${payload.html_size.toLocaleString()} bytes · 분석 완료`;
+    renderSummary(payload); renderPriorities(payload.top_priorities); renderPanels(payload); switchTab('all'); results.hidden = false;
+    statusEl.textContent = '분석이 완료되었습니다.'; statusEl.className = 'status success';
+  } catch (error) { statusEl.textContent = error.message; statusEl.className = 'status error'; }
 });
 
-reportButton.addEventListener('click', () => {
-  if (!latestResult) return;
-  window.print();
-  return;
-});
-/*
-  const blob = new Blob([printable], {type: 'text/plain;charset=utf-8'});
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'brandscan-report.txt';
-  link.click();
-*/
+reportButton.addEventListener('click', () => { if (latestResult) window.print(); });
