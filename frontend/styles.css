@@ -1,0 +1,30 @@
+:root { --navy:#09223f; --cream:#f3eee2; --surface:#faf7ee; --blue:#2b6cb8; --muted:#5f666d; --line:rgba(9,34,63,.15); --yellow:#ecc95f; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--navy); color:var(--navy); font-family:"Noto Serif KR", Georgia, serif; }
+.shell { width:min(1180px, calc(100% - 40px)); margin:28px auto; }
+.hero, .results { background:var(--cream); padding:56px clamp(24px, 6vw, 86px); box-shadow:0 24px 60px rgba(0,0,0,.2); }
+.hero { min-height:560px; display:flex; flex-direction:column; justify-content:center; }
+.eyebrow { margin:0 0 14px; color:var(--blue); font:600 12px/1.4 Arial, sans-serif; letter-spacing:.22em; text-transform:uppercase; }
+h1 { margin:0; font-size:clamp(42px, 7vw, 86px); line-height:1.08; letter-spacing:-.06em; }
+h1 span { color:var(--blue); }
+.hero > p:not(.eyebrow) { max-width:680px; margin:28px 0 36px; color:#3f4346; font-size:18px; line-height:1.7; }
+.url-form { max-width:760px; }
+.url-form label { display:block; margin-bottom:8px; font:600 13px/1.4 Arial, sans-serif; }
+.input-row { display:flex; gap:10px; }
+input { flex:1; min-width:0; border:1px solid var(--line); padding:16px 18px; background:var(--surface); color:var(--navy); font:16px Arial, sans-serif; }
+button { cursor:pointer; border:0; }
+.input-row button, .secondary { padding:0 22px; background:var(--navy); color:var(--cream); font:600 14px Arial, sans-serif; }
+.status { min-height:24px; margin:18px 0 0; font:14px Arial, sans-serif; }
+.status.loading { color:var(--blue); }.status.success { color:#426344; }.status.error { color:#a63d33; }
+.results { margin-top:28px; }
+.result-heading, .section-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; }
+.result-heading h2, .section-heading h2 { margin:0; font-size:clamp(25px, 4vw, 42px); letter-spacing:-.04em; }
+.result-heading h2 { max-width:700px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.secondary { min-height:44px; padding:0 18px; }
+.summary-grid, .priority-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-top:28px; }
+.summary-card, .priority-card, .detail-panel { border:1px solid var(--line); background:var(--surface); }
+.summary-card { padding:22px; }.summary-card p, .summary-card span { display:block; margin:0; font:13px Arial, sans-serif; color:var(--muted); }.summary-card strong { display:block; margin:12px 0 8px; font-size:25px; }
+.priority-section { margin-top:70px; }.priority-card { text-align:left; padding:22px; color:var(--navy); transition:transform .18s, border-color .18s; }.priority-card:hover { transform:translateY(-3px); border-color:var(--blue); }.priority-number { display:block; color:var(--blue); font-size:34px; }.priority-area { display:block; margin-top:10px; color:var(--muted); font:11px Arial, sans-serif; letter-spacing:.14em; text-transform:uppercase; }.priority-card h3 { margin:10px 0; font-size:20px; }.priority-card p { margin:14px 0 0; color:#3f4346; font-size:14px; line-height:1.6; }.priority-status { display:inline-block; padding:5px 8px; font:11px Arial, sans-serif; background:#e9e3d3; }.status-confirmed { color:#245c9e; }.status-unknown { color:#a63d33; }
+.detail-panel { margin-top:18px; padding:26px; }.detail-panel h2 { margin:0 0 20px; font-size:28px; }.detail-panel dl { display:grid; grid-template-columns:120px 1fr; gap:12px 20px; margin:0; font-size:15px; line-height:1.6; }.detail-panel dt { font-weight:700; }.detail-panel dd { margin:0; color:#3f4346; }
+@media (max-width:760px) { .shell { width:100%; margin:0; }.hero,.results { padding:36px 22px; }.input-row, .result-heading { flex-direction:column; align-items:stretch; }.input-row button { min-height:48px; }.summary-grid,.priority-grid { grid-template-columns:1fr; }.detail-panel dl { grid-template-columns:1fr; gap:4px; }.detail-panel dt { margin-top:10px; } }
+@media print { body { background:white; }.shell { width:100%; margin:0; }.hero { display:none; }.results { margin:0; box-shadow:none; }.priority-card { break-inside:avoid; }.secondary { display:none; } }

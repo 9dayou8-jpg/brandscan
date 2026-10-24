@@ -1,0 +1,9 @@
+__pycache__/
+.pytest_cache/
+.superpowers/
+classroom-submit-response.json
+*.pyc
+.env
+.venv/
+venv/
+.DS_Store
