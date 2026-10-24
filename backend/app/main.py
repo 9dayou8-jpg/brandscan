@@ -8,6 +8,7 @@ from backend.app.extractors.geo import extract_geo_facts
 from backend.app.extractors.martech import detect_martech
 from backend.app.extractors.technical_seo import extract_technical_seo
 from backend.app.fetcher import fetch_public_page
+from backend.app.geo_evaluator import evaluate_geo
 from backend.app.page_context import infer_page_type
 from backend.app.analysis_context import build_analysis_metadata
 from backend.app.prioritizer import build_issues, deduplicate_issues, rank_issues
@@ -50,6 +51,7 @@ def analyze(request: AnalyzeRequest) -> dict[str, object]:
     )
     martech = detect_martech(page.html)
     geo = extract_geo_facts(page.html)
+    geo_evaluation = evaluate_geo(geo)
     all_issues = rank_issues(deduplicate_issues(build_issues(technical_seo, martech, geo, marketing_objective=request.marketing_objective)))
     confirmed_issues = [issue for issue in all_issues if issue["issue_confirmed"]]
     additional_review_items = [issue for issue in all_issues if not issue["issue_confirmed"]]
@@ -63,6 +65,7 @@ def analyze(request: AnalyzeRequest) -> dict[str, object]:
         "technical_seo": technical_seo,
         "martech": martech,
         "geo": geo,
+        "geo_evaluation": geo_evaluation,
         "issues": all_issues,
         "confirmed_issues": confirmed_issues,
         "additional_review_items": additional_review_items,
