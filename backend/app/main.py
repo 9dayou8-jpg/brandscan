@@ -70,6 +70,8 @@ def _merge_media_inventory(static_items: list[dict[str, object]], runtime_items:
             existing = merged[platform]
             existing["runtime_status"] = "confirmed"
             existing["runtime_events"] = list(item.get("events", []))
+            existing["runtime_identifiers"] = list(item.get("identifiers", []))
+            existing["runtime_tag_types"] = list(item.get("tag_types", []))
             existing["runtime_evidence"] = list(item.get("evidence", []))
     return list(merged.values())
 

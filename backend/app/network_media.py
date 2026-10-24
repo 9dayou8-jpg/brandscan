@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from urllib.parse import parse_qs, urlparse
 
 
@@ -21,6 +22,30 @@ def _events_from_query(parsed) -> list[str]:
     return list(dict.fromkeys(events))
 
 
+def _identifiers_from_request(parsed) -> list[str]:
+    query = parse_qs(parsed.query)
+    identifiers: list[str] = []
+    for key in ("tid", "id", "ti", "account", "pixel_id", "conversion_id"):
+        identifiers.extend(value for value in query.get(key, []) if value)
+    identifiers.extend(re.findall(r"(?:AW-|G-)[A-Z0-9-]+", parsed.path, flags=re.IGNORECASE))
+    return list(dict.fromkeys(identifiers))
+
+
+def _tag_types_for_request(parsed, platform: str) -> list[str]:
+    host = parsed.netloc.lower()
+    path = parsed.path.lower()
+    if platform == "Google":
+        types: list[str] = []
+        if "google-analytics.com" in host or "analytics.google.com" in host or "/g/collect" in path:
+            types.append("Google Analytics")
+        if "googleadservices.com" in host or "doubleclick.net" in host or "/pagead/" in path or "aw-" in parsed.path.lower():
+            types.append("Google Ads")
+        if "googletagmanager.com" in host:
+            types.append("Google Tag Manager")
+        return types
+    return {"Microsoft Ads": ["Bing Ads"], "Criteo": ["Criteo OneTag"], "Meta": ["Facebook Pixel"]}.get(platform, [])
+
+
 def _platform_for_url(url: str) -> str | None:
     parsed = urlparse(url)
     host = parsed.netloc.lower()
@@ -28,7 +53,7 @@ def _platform_for_url(url: str) -> str | None:
     query = parsed.query.lower()
     if "twitter.com" in host or host == "t.co" or "p_id=twitter" in query:
         return "X (Twitter)"
-    if "google-analytics.com" in host or "googletagmanager.com" in host or "/collect" in path and "google" in host:
+    if "google-analytics.com" in host or "analytics.google.com" in host or "googletagmanager.com" in host or "googleadservices.com" in host or "doubleclick.net" in host or ("/collect" in path and "google" in host) or "/pagead/" in path and "google" in host:
         return "Google"
     if "facebook.com" in host or "connect.facebook.net" in host:
         return "Meta"
@@ -68,8 +93,10 @@ def classify_runtime_requests(urls: list[str]) -> dict[str, object]:
             unclassified.append(url)
             continue
         parsed = urlparse(url)
-        item = grouped.setdefault(platform, {"platform": platform, "status": "confirmed", "events": [], "evidence": []})
+        item = grouped.setdefault(platform, {"platform": platform, "status": "confirmed", "events": [], "identifiers": [], "tag_types": [], "evidence": []})
         item["events"] = list(dict.fromkeys([*item["events"], *_events_from_query(parsed)]))
+        item["identifiers"] = list(dict.fromkeys([*item["identifiers"], *_identifiers_from_request(parsed)]))
+        item["tag_types"] = list(dict.fromkeys([*item["tag_types"], *_tag_types_for_request(parsed, platform)]))
         evidence = f"{parsed.netloc}{parsed.path}"
         if evidence not in item["evidence"]:
             item["evidence"].append(evidence)

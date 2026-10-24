@@ -131,9 +131,12 @@ function renderPanels(result) {
   if (mediaList) {
     const rows = [...(result.martech.media_inventory || [])].map(item => {
       const events = item.runtime_events?.length ? `이벤트: ${item.runtime_events.join(', ')}` : '이벤트명 미확인';
+      const tagTypes = [...(item.runtime_tag_types || item.tag_types || [])];
+      const identifiers = [...(item.runtime_identifiers || item.identifiers || [])];
+      const details = [...tagTypes, identifiers.length ? `ID: ${identifiers.join(', ')}` : '', events].filter(Boolean).join(' · ');
       const source = item.runtime_status === 'confirmed' ? '브라우저 요청 확인' : 'HTML 단서 확인';
       const evidence = [...(item.evidence || []), ...(item.runtime_evidence || [])].join(', ');
-      return `<div class="media-row"><strong>${esc(item.platform)}</strong><span>${esc(item.category)}</span><em>${esc(source)}</em><small>${esc(events)} · ${esc(evidence)}</small></div>`;
+      return `<div class="media-row"><strong>${esc(item.platform)}</strong><span>${esc(item.category)}</span><em>${esc(source)}</em><small>${esc(details)} · ${esc(evidence)}</small></div>`;
     }).join('');
     const scriptSources = result.martech.script_sources || [];
     const scriptMarkup = scriptSources.length ? `<div class="script-sources"><b>HTML script src (${scriptSources.length})</b>${scriptSources.slice(0, 12).map(source => `<code>${esc(source)}</code>`).join('')}${scriptSources.length > 12 ? `<small>외 ${scriptSources.length - 12}개</small>` : ''}</div>` : '<div class="script-sources"><b>HTML script src</b><span>확인된 외부 script src 없음 · 동적 로딩 여부는 런타임 요청에서 별도 확인</span></div>';
