@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from backend.app.browser_media import capture_runtime_requests
+from backend.app.brand_profile import build_brand_profile_draft
 from backend.app.extractors.geo import extract_geo_facts
 from backend.app.extractors.martech import detect_martech
 from backend.app.extractors.technical_seo import extract_technical_seo
@@ -32,9 +33,23 @@ class AnalyzeRequest(BaseModel):
     capture_runtime: bool = False
 
 
+class BrandProfileDraftRequest(BaseModel):
+    website_url: str
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post("/api/brand-profile/draft")
+def brand_profile_draft(request: BrandProfileDraftRequest) -> dict[str, object]:
+    try:
+        page = fetch_public_page(request.website_url)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    technical = extract_technical_seo(page.html, page.final_url)
+    return build_brand_profile_draft(website_url=page.final_url, technical_facts=technical)
 
 
 def _merge_media_inventory(static_items: list[dict[str, object]], runtime_items: list[dict[str, object]]) -> list[dict[str, object]]:
