@@ -96,6 +96,9 @@ def analyze(request: AnalyzeRequest) -> dict[str, object]:
         runtime_capture = capture_runtime_requests(page.final_url)
         runtime_classification = classify_runtime_requests(runtime_capture.get("request_urls", []))
         martech["runtime_capture"] = runtime_capture
+        martech["consent_status"] = runtime_capture.get("consent_status", "not_measured")
+        martech["consent_signals"] = list(runtime_capture.get("consent_signals", []))
+        martech["consent_note"] = runtime_capture.get("consent_note", "런타임 동의 상태를 확인할 수 없습니다.")
         martech["runtime_media_inventory"] = runtime_classification["media_inventory"]
         martech["runtime_request_count"] = runtime_classification["request_count"]
         martech["media_inventory"] = _merge_media_inventory(martech["media_inventory"], runtime_classification["media_inventory"])
