@@ -8,6 +8,14 @@ OBJECTIVE_IMPACT_ADJUSTMENTS = {
     "martech-ga4": {"brand_awareness": 0, "acquisition": 0, "conversion": 1, "lead_generation": 1},
     "geo-question": {"brand_awareness": 0, "acquisition": 1, "conversion": 0, "lead_generation": 1},
 }
+ISSUE_GROUPS = {
+    "seo-title": ("content-context-001", "content-messaging-001"),
+    "seo-description": ("content-context-001", "content-messaging-001"),
+    "seo-alt": ("accessibility-001", "image-content-001"),
+    "martech-ga4": ("martech-measurement-001", "martech-validation-001"),
+    "geo-question": ("geo-structure-001", "geo-content-001"),
+    "geo-context": ("geo-structure-001", "geo-content-001"),
+}
 
 
 def adjust_impact(issue_id: str, base_impact: int, marketing_objective: str) -> int:
@@ -36,6 +44,8 @@ def _issue(issue_id: str, area: str, title: str, evidence: str, recommendation: 
     score = int(priority["score"])
     return {
         "id": issue_id,
+        "root_cause_id": ISSUE_GROUPS.get(issue_id, (issue_id, issue_id))[0],
+        "resolution_group_id": ISSUE_GROUPS.get(issue_id, (issue_id, issue_id))[1],
         "area": area,
         "title": title,
         "status": status,
@@ -67,6 +77,22 @@ def build_issues(technical: dict[str, object], martech: dict[str, object], geo: 
     if not geo.get("has_explanatory_content"):
         issues.append(_issue("geo-context", "geo", "설명형 콘텐츠가 부족합니다", "페이지 본문에서 충분한 설명형 텍스트를 확인하지 못했습니다.", "고객 문제·선택 기준·사용 방법을 설명하는 본문을 추가합니다.", 2, 2, 2, marketing_objective=marketing_objective))
     return issues
+
+
+def deduplicate_issues(issues: list[dict[str, object]]) -> list[dict[str, object]]:
+    groups: dict[str, list[dict[str, object]]] = {}
+    for issue in issues:
+        group_key = str(issue.get("resolution_group_id") or issue["id"])
+        groups.setdefault(group_key, []).append(issue)
+    representatives: list[dict[str, object]] = []
+    for members in groups.values():
+        ordered = sorted(members, key=lambda item: int(item.get("score", 0)), reverse=True)
+        representative = dict(ordered[0])
+        related_ids = [str(item["id"]) for item in ordered[1:]]
+        representative["related_issue_ids"] = related_ids
+        representative["deduplicated_count"] = len(ordered)
+        representatives.append(representative)
+    return sorted(representatives, key=lambda item: int(item.get("score", 0)), reverse=True)
 
 
 def rank_issues(issues: list[dict[str, object]]) -> list[dict[str, object]]:

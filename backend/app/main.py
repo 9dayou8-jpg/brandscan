@@ -10,7 +10,7 @@ from backend.app.extractors.technical_seo import extract_technical_seo
 from backend.app.fetcher import fetch_public_page
 from backend.app.page_context import infer_page_type
 from backend.app.analysis_context import build_analysis_metadata
-from backend.app.prioritizer import build_issues, rank_issues
+from backend.app.prioritizer import build_issues, deduplicate_issues, rank_issues
 
 
 app = FastAPI(title="BrandScan MVP", version="0.1.0")
@@ -50,7 +50,7 @@ def analyze(request: AnalyzeRequest) -> dict[str, object]:
     )
     martech = detect_martech(page.html)
     geo = extract_geo_facts(page.html)
-    issues = rank_issues(build_issues(technical_seo, martech, geo, marketing_objective=request.marketing_objective))
+    issues = rank_issues(deduplicate_issues(build_issues(technical_seo, martech, geo, marketing_objective=request.marketing_objective)) )
     return {
         "url": page.requested_url,
         "final_url": page.final_url,

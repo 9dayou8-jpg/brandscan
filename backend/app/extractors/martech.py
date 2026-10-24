@@ -18,6 +18,7 @@ def _media_item(html: str, platform: str, category: str, markers: tuple[str, ...
         "platform": platform,
         "category": category,
         "status": "confirmed",
+        "operating_inference": "likely",
         "evidence": evidence,
         "note": "공개 HTML에서 해당 매체의 태그 단서가 확인됨. 실제 캠페인 운영·광고비·성과는 측정하지 않음.",
     }
@@ -39,6 +40,12 @@ def detect_martech(html: str) -> dict[str, object]:
         _media_item(html, "Naver", "paid_media", ("wcs.naver.net", "wcs_add", "naver.com/ad")),
         _media_item(html, "Kakao", "paid_media", ("kakaopixel", "kakaoPixel", "track.kakao.com")),
         _media_item(html, "Pinterest", "paid_media", ("pintrk(", "pinimg.com/ct", "pinterest")),
+        _media_item(html, "LinkedIn", "paid_media", ("lintrk(", "snap.licdn.com", "linkedin_insight")),
+        _media_item(html, "Snapchat", "paid_media", ("snaptr(", "sc-static.net", "snapchat")),
+        _media_item(html, "Criteo", "paid_media", ("criteo_q", "criteo.com", "criteo")),
+        _media_item(html, "Microsoft Ads", "paid_media", ("bat.bing.com", "uetq.push", "microsoftadvertising")),
+        _media_item(html, "당근", "paid_media", ("daangn", "karrot", "daangnPixel")),
+        _media_item(html, "토스", "paid_media", ("tossads", "ads.toss.im", "toss.im/ads")),
     ):
         if item is not None:
             inventory.append(item)
