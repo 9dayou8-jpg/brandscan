@@ -6,6 +6,7 @@ const resultUrl = document.querySelector('#result-url');
 const analysisMeta = document.querySelector('#analysis-meta');
 const summaryCards = document.querySelector('#summary-cards');
 const priorityList = document.querySelector('#priority-list');
+const reviewList = document.querySelector('#review-list');
 const detailPanels = document.querySelector('#detail-panels');
 const reportButton = document.querySelector('#download-report');
 let latestResult = null;
@@ -65,6 +66,11 @@ function renderPriorities(items) {
   });
 }
 
+function renderAdditionalReview(items) {
+  reviewList.hidden = items.length === 0;
+  reviewList.innerHTML = items.length ? `<div class="review-heading"><strong>추가 검증 필요 항목</strong><span>확정된 개선 과제와 분리</span></div>${items.map(item => `<div class="review-row"><span class="review-status">추가 검증 필요</span><strong>${esc(item.title)}</strong><span>${esc(item.evidence)}</span></div>`).join('')}` : '';
+}
+
 function stateRow(label, status) {
   const safeStatus = labels[status] || status;
   const tone = status === 'confirmed' ? 'ok' : status === 'unknown' ? 'na' : 'warn';
@@ -106,7 +112,7 @@ form.addEventListener('submit', async event => {
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.detail || '분석에 실패했습니다.');
     latestResult = payload; resultUrl.textContent = payload.final_url; const context = payload.analysis_metadata; analysisMeta.textContent = `HTTP ${payload.status_code} · HTML ${payload.html_size.toLocaleString()} bytes · ${pageTypeLabels[context.page_type.selected] || context.page_type.selected} · ${objectiveLabels[context.marketing_objective] || context.marketing_objective}`;
-    renderSummary(payload); renderPriorities(payload.top_priorities); renderPanels(payload); switchTab('all'); results.hidden = false;
+    renderSummary(payload); renderPriorities(payload.top_priorities); renderAdditionalReview(payload.additional_review_items); renderPanels(payload); switchTab('all'); results.hidden = false;
     statusEl.textContent = '분석이 완료되었습니다.'; statusEl.className = 'status success';
   } catch (error) { statusEl.textContent = error.message; statusEl.className = 'status error'; }
 });

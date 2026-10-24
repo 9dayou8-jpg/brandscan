@@ -27,8 +27,12 @@ def test_analyze_returns_page_snapshot(monkeypatch):
     assert payload["technical_seo"]["title"] == "Example"
     assert "martech" in payload
     assert "geo" in payload
-    assert len(payload["top_priorities"]) == 3
-    assert all(item["evidence"] and item["recommendation"] for item in payload["top_priorities"])
+    assert "issues" in payload
+    assert "confirmed_issues" in payload
+    assert "additional_review_items" in payload
+    assert len(payload["top_priorities"]) == len(payload["confirmed_issues"])
+    assert all(item["issue_confirmed"] for item in payload["top_priorities"])
+    assert all(item["evidence"] and item["recommendation"] for item in payload["issues"])
 
 
 def test_analyze_rejects_missing_url():

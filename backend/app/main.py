@@ -50,7 +50,9 @@ def analyze(request: AnalyzeRequest) -> dict[str, object]:
     )
     martech = detect_martech(page.html)
     geo = extract_geo_facts(page.html)
-    issues = rank_issues(deduplicate_issues(build_issues(technical_seo, martech, geo, marketing_objective=request.marketing_objective)) )
+    all_issues = rank_issues(deduplicate_issues(build_issues(technical_seo, martech, geo, marketing_objective=request.marketing_objective)))
+    confirmed_issues = [issue for issue in all_issues if issue["issue_confirmed"]]
+    additional_review_items = [issue for issue in all_issues if not issue["issue_confirmed"]]
     return {
         "url": page.requested_url,
         "final_url": page.final_url,
@@ -61,6 +63,8 @@ def analyze(request: AnalyzeRequest) -> dict[str, object]:
         "technical_seo": technical_seo,
         "martech": martech,
         "geo": geo,
-        "issues": issues,
-        "top_priorities": issues[:3],
+        "issues": all_issues,
+        "confirmed_issues": confirmed_issues,
+        "additional_review_items": additional_review_items,
+        "top_priorities": confirmed_issues[:3],
     }

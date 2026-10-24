@@ -1,4 +1,4 @@
-from __future__ import annotations
+from backend.app.diagnosis import classify_finding
 
 
 PRIORITY_FORMULA_VERSION = "0.3.0"
@@ -39,6 +39,19 @@ def calculate_priority(*, impact: int, urgency: int, ease: int, marketing_object
 
 
 def _issue(issue_id: str, area: str, title: str, evidence: str, recommendation: str, impact: int, urgency: int, ease: int, status: str = "confirmed", marketing_objective: str = "acquisition") -> dict[str, object]:
+    state_map = {
+        "confirmed": ("confirmed", "recommendation", True, "high"),
+        "unknown": ("unverified", "additional_review", False, "low"),
+        "partial": ("partial", "additional_review", False, "medium"),
+        "suspicious": ("confirmed", "error_suspected", False, "medium"),
+    }
+    evidence_status, diagnosis_status, issue_confirmed, confidence = state_map[status]
+    classification = classify_finding(
+        evidence_status=evidence_status,
+        diagnosis_status=diagnosis_status,
+        issue_confirmed=issue_confirmed,
+        confidence=confidence,
+    )
     adjusted_impact = adjust_impact(issue_id, impact, marketing_objective)
     priority = calculate_priority(impact=adjusted_impact, urgency=urgency, ease=ease, marketing_objective=marketing_objective)
     score = int(priority["score"])
@@ -49,6 +62,11 @@ def _issue(issue_id: str, area: str, title: str, evidence: str, recommendation: 
         "area": area,
         "title": title,
         "status": status,
+        "evidence_status": classification["evidence_status"],
+        "diagnosis_status": classification["diagnosis_status"],
+        "issue_confirmed": classification["issue_confirmed"],
+        "confidence": classification["confidence"],
+        "business_impact_status": classification["business_impact_status"],
         "problem": title,
         "evidence": evidence,
         "recommendation": recommendation,
@@ -73,9 +91,9 @@ def build_issues(technical: dict[str, object], martech: dict[str, object], geo: 
     if isinstance(tools, dict) and tools.get("ga4", {}).get("status") == "unknown":
         issues.append(_issue("martech-ga4", "martech", "GA4 설치 여부를 확인할 수 없습니다", "공개 HTML에서 GA4 단서를 찾지 못했습니다.", "쿠키 동의 후 실제 네트워크 요청과 태그 설정을 추가 확인합니다.", 2, 2, 2, status="unknown", marketing_objective=marketing_objective))
     if not geo.get("has_question_heading"):
-        issues.append(_issue("geo-question", "geo", "질문형 콘텐츠 구조가 부족합니다", "FAQ 또는 질문형 heading을 확인하지 못했습니다.", "사용자 질문을 H2와 FAQ/Q&A 형식으로 구성합니다.", 2, 2, 2, marketing_objective=marketing_objective))
+        issues.append(_issue("geo-question", "geo", "질문형 콘텐츠 구조가 부족합니다", "FAQ 또는 질문형 heading을 확인하지 못했습니다.", "사용자 질문을 H2와 FAQ/Q&A 형식으로 구성합니다.", 2, 2, 2, status="unknown", marketing_objective=marketing_objective))
     if not geo.get("has_explanatory_content"):
-        issues.append(_issue("geo-context", "geo", "설명형 콘텐츠가 부족합니다", "페이지 본문에서 충분한 설명형 텍스트를 확인하지 못했습니다.", "고객 문제·선택 기준·사용 방법을 설명하는 본문을 추가합니다.", 2, 2, 2, marketing_objective=marketing_objective))
+        issues.append(_issue("geo-context", "geo", "설명형 콘텐츠가 부족합니다", "페이지 본문에서 충분한 설명형 텍스트를 확인하지 못했습니다.", "고객 문제·선택 기준·사용 방법을 설명하는 본문을 추가합니다.", 2, 2, 2, status="unknown", marketing_objective=marketing_objective))
     return issues
 
 
