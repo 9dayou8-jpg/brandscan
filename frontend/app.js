@@ -9,6 +9,8 @@ const priorityList = document.querySelector('#priority-list');
 const reviewList = document.querySelector('#review-list');
 const detailPanels = document.querySelector('#detail-panels');
 const reportButton = document.querySelector('#download-report');
+const sectionNavItems = [...document.querySelectorAll('.section-nav-item')];
+const primaryNavItems = [...document.querySelectorAll('.primary-nav .nav-item')];
 let latestResult = null;
 
 const labels = { confirmed: '확인', partial: '일부 확인', suspicious: '의심', unknown: '미확인' };
@@ -77,6 +79,35 @@ function stateRow(label, status) {
   return `<li><span class="state"><i class="dot ${tone}"></i>${esc(label)} · ${esc(safeStatus)}</span></li>`;
 }
 
+function setActiveSection(index) {
+  sectionNavItems.forEach((item, itemIndex) => item.classList.toggle('active', itemIndex === index));
+}
+
+function sectionNavigation(index) {
+  setActiveSection(index);
+  const panelTab = { 2: 'seo', 3: 'geo', 4: 'martech', 5: 'all' }[index];
+  if (panelTab) switchTab(panelTab);
+  const target = [summaryCards, priorityList, document.querySelector('#panel-technical_seo'), document.querySelector('#panel-geo'), document.querySelector('#panel-martech'), detailPanels, form][index];
+  if (target && typeof target.scrollIntoView === 'function') target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+sectionNavItems.forEach((item, index) => item.addEventListener('click', () => sectionNavigation(index)));
+
+primaryNavItems.forEach((item, index) => item.addEventListener('click', event => {
+  event.preventDefault();
+  primaryNavItems.forEach(navItem => navItem.classList.remove('active'));
+  item.classList.add('active');
+  if (index === 0) {
+    document.querySelector('#analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (index === 1) {
+    if (!results.hidden) results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else { statusEl.textContent = '먼저 URL을 분석하면 대시보드 결과가 표시됩니다.'; statusEl.className = 'status'; }
+  } else if (index > 1) {
+    statusEl.textContent = '이 메뉴는 현재 MVP에서 준비 중입니다. 분석 결과의 상세 탭을 이용해주세요.';
+    statusEl.className = 'status';
+  }
+}));
+
 function renderPanels(result) {
   const tools = result.martech.tools;
   const seo = result.technical_seo;
@@ -94,11 +125,27 @@ function renderPanels(result) {
     <div id="panel-martech" class="panel" role="tabpanel" hidden><div class="detail-note"><strong>MarTech·트래킹 체크리스트</strong><br>${esc(runtimeNote)} 설치 스크립트 감지와 실제 추적 요청을 분리합니다. 확인하지 못한 항목은 실패가 아니라 <strong>미확인</strong>으로 표시합니다.</div><div class="checklist">${Object.entries(tools).map(([name, data]) => `<div class="check-row"><span class="check-box ${data.status === 'confirmed' ? 'ok' : data.status === 'unknown' ? 'na' : 'warn'}">${data.status === 'confirmed' ? '✓' : data.status === 'unknown' ? '?' : '!'}</span><span>${esc(name.replace('_', ' ').toUpperCase())} 스크립트 단서</span><span class="check-status">${esc(labels[data.status] || data.status)}</span></div>`).join('')}</div><p class="check-caption">상태 기준 · 확인: 공개 HTML에서 단서 감지 · 일부 확인/의심: 추가 검증 필요 · 미확인: 공개 페이지에서 판단할 수 없음</p><div class="media-list"><h3>탐지된 매체·태그 단서</h3>${result.martech.media_inventory.length ? result.martech.media_inventory.map(item => `<div class="media-row"><strong>${esc(item.platform)}</strong><span>${esc(item.category)}</span><em>운영 중</em><small>${esc([...(item.evidence || []), ...(item.runtime_evidence || [])].join(', '))}</small></div>`).join('') : '<p class="check-caption">공개 HTML에서 알려진 매체 태그 단서를 찾지 못했습니다.</p>'}</div><p class="check-caption">주의: 이 목록은 공개 HTML에서 태그 단서가 확인된 매체 목록이며, 실제 캠페인 운영·광고비·성과를 의미하지 않습니다.</p></div>
     <div id="panel-technical_seo" class="panel" role="tabpanel" hidden><div class="detail-note"><strong>Technical SEO 상세</strong><br>페이지 HTML에서 직접 확인한 구조적 신호입니다. 검색 순위·트래픽·색인 성과를 측정한 결과가 아닙니다.</div><div class="evidence"><div><b>Title</b>${esc(seo.title || '미확인')}</div><div><b>Meta Description</b>${esc(seo.description || '미확인')}</div><div><b>H1~H3</b>H1 ${seo.headings.h1.length}개 · H2 ${seo.headings.h2.length}개 · H3 ${seo.headings.h3.length}개</div><div><b>이미지 alt</b>전체 ${seo.images.total}개 · 누락 ${seo.images.missing_alt}개</div><div><b>Canonical</b>${esc(seo.canonical || '미확인')}</div><div><b>JSON-LD</b>${seo.json_ld_types.length ? esc(seo.json_ld_types.join(', ')) : '미검출'}</div></div></div>
     <div id="panel-geo" class="panel" role="tabpanel" hidden><div class="detail-note"><strong>GEO 준비도 · ${esc(geoEvaluation.geo_readiness.status)}</strong><br>AI 검색 노출·인용 성과는 측정하지 않았습니다. 현재 결과는 공개 페이지 구조와 근거 문장을 평가한 것입니다.</div><div class="evidence">${geoCriteria}</div><div class="recommend-grid">${geoIssues.length ? geoIssues.map((issue, i) => `<div class="recommend"><h4>소재 ${i + 1} · ${esc(issue.title)}</h4><p><strong>개선 방향</strong> · ${esc(issue.recommendation)}</p><div class="copy-example"><span class="copy-label">근거</span>${esc(issue.evidence)}</div></div>`).join('') : '<div class="recommend"><h4>현재 확인된 GEO 개선 과제 없음</h4><p>추가 확인이 필요한 콘텐츠 구조를 계속 점검합니다.</p></div>'}</div></div>`;
+  const runtimeMedia = result.martech.runtime_media_inventory || [];
+  const runtimeUnclassified = result.martech.runtime_capture?.unclassified_requests || [];
+  const mediaList = document.querySelector('#panel-martech .media-list');
+  if (mediaList) {
+    const rows = [...(result.martech.media_inventory || [])].map(item => {
+      const events = item.runtime_events?.length ? `이벤트: ${item.runtime_events.join(', ')}` : '이벤트명 미확인';
+      const source = item.runtime_status === 'confirmed' ? '브라우저 요청 확인' : 'HTML 단서 확인';
+      const evidence = [...(item.evidence || []), ...(item.runtime_evidence || [])].join(', ');
+      return `<div class="media-row"><strong>${esc(item.platform)}</strong><span>${esc(item.category)}</span><em>${esc(source)}</em><small>${esc(events)} · ${esc(evidence)}</small></div>`;
+    }).join('');
+    const scriptSources = result.martech.script_sources || [];
+    const scriptMarkup = scriptSources.length ? `<div class="script-sources"><b>HTML script src (${scriptSources.length})</b>${scriptSources.slice(0, 12).map(source => `<code>${esc(source)}</code>`).join('')}${scriptSources.length > 12 ? `<small>외 ${scriptSources.length - 12}개</small>` : ''}</div>` : '<div class="script-sources"><b>HTML script src</b><span>확인된 외부 script src 없음 · 동적 로딩 여부는 런타임 요청에서 별도 확인</span></div>';
+    mediaList.innerHTML = `<h3>탐지된 매체·태그 단서</h3>${rows || '<p class="check-caption">공개 HTML과 브라우저 요청에서 알려진 단서를 찾지 못했습니다.</p>'}<div class="runtime-summary"><b>브라우저 런타임</b><span>전체 요청 ${result.martech.runtime_request_count ?? 0}개 · 분류된 분석 단서 ${runtimeMedia.length}개 · 미분류 ${runtimeUnclassified.length}개</span></div>${scriptMarkup}<p class="check-caption">미분류 요청은 공급자명을 확정할 수 없어 성과·캠페인 운영으로 해석하지 않습니다.</p>`;
+  }
   document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
 }
 
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach(tab => { const active = tab.dataset.tab === name; tab.classList.toggle('active', active); tab.setAttribute('aria-selected', String(active)); });
+  const sectionIndex = { all: 0, seo: 2, geo: 3, martech: 4 }[name];
+  if (sectionIndex !== undefined) setActiveSection(sectionIndex);
   const panelName = name === 'seo' ? 'technical_seo' : name;
   document.querySelectorAll('.panel').forEach(panel => { panel.hidden = panel.id !== `panel-${panelName}`; });
 }

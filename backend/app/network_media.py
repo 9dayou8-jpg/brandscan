@@ -34,6 +34,12 @@ def _platform_for_url(url: str) -> str | None:
         return "Meta"
     if "tiktok" in host:
         return "TikTok"
+    if "analytics.nike.com" in host or "clickstream.halfpipe.nike.com" in host or "/static/analytics-client/" in path:
+        return "First-party analytics"
+    if "nr-data.net" in host or "newrelic.com" in host or "newrelic" in path:
+        return "New Relic"
+    if "go-mpulse.net" in host or "akamai" in host or "boomerang" in path:
+        return "Akamai mPulse"
     if "naver" in host:
         return "Naver"
     if "kakao" in host:

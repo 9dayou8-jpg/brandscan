@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+import re
+
+
+def _script_sources(html: str) -> list[str]:
+    return list(dict.fromkeys(re.findall(r'''<script\b[^>]*?\bsrc=["']([^"']+)["']''', html, flags=re.IGNORECASE)))
+
 
 def _matches(html: str, markers: tuple[str, ...]) -> list[str]:
     lowered = html.lower()
@@ -31,6 +37,9 @@ def detect_martech(html: str) -> dict[str, object]:
         "google_ads": {"status": _tool_status(html, ("googleadservices.com", "google_conversion_id", " aw-"))},
         "meta_pixel": {"status": _tool_status(html, ("fbq(", "fbevents.js", "connect.facebook.net"))},
         "tiktok_pixel": {"status": _tool_status(html, ("ttq.", "analytics.tiktok.com", "tiktok-pixel"))},
+        "first_party_analytics": {"status": _tool_status(html, ("analytics-client", "analytics.nike.com", "clickstream.halfpipe.nike.com"))},
+        "new_relic": {"status": _tool_status(html, ("newrelic", "nr-data.net", "insights-collector.newrelic.com"))},
+        "akamai_mpulse": {"status": _tool_status(html, ("go-mpulse.net", "boomerang", "akamai"))},
     }
     inventory: list[dict[str, object]] = []
     for item in (
@@ -46,7 +55,10 @@ def detect_martech(html: str) -> dict[str, object]:
         _media_item(html, "Microsoft Ads", "paid_media", ("bat.bing.com", "uetq.push", "microsoftadvertising")),
         _media_item(html, "당근", "paid_media", ("daangn", "karrot", "daangnPixel")),
         _media_item(html, "토스", "paid_media", ("tossads", "ads.toss.im", "toss.im/ads")),
+        _media_item(html, "First-party analytics", "first_party_analytics", ("analytics-client", "analytics.nike.com", "clickstream.halfpipe.nike.com")),
+        _media_item(html, "New Relic", "observability", ("newrelic", "nr-data.net", "insights-collector.newrelic.com")),
+        _media_item(html, "Akamai mPulse", "performance_analytics", ("go-mpulse.net", "boomerang", "akamai")),
     ):
         if item is not None:
             inventory.append(item)
-    return {"tools": tools, "media_inventory": inventory}
+    return {"tools": tools, "media_inventory": inventory, "script_sources": _script_sources(html)}
