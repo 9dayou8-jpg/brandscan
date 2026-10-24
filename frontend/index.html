@@ -25,6 +25,28 @@
           <input id="url" name="url" type="url" placeholder="https://example.com" required>
           <button type="submit">분석 시작</button>
         </div>
+        <div class="context-row">
+          <label>분석 목적
+            <select name="marketing_objective">
+              <option value="brand_awareness">브랜드 인지도</option>
+              <option value="acquisition" selected>신규 고객 유입</option>
+              <option value="conversion">구매 전환</option>
+              <option value="lead_generation">리드 확보</option>
+            </select>
+          </label>
+          <label>페이지 유형 수정
+            <select name="page_type">
+              <option value="">자동 추정 사용</option>
+              <option value="homepage">홈페이지</option>
+              <option value="service">서비스</option>
+              <option value="product">상품</option>
+              <option value="landing">랜딩</option>
+              <option value="blog">블로그</option>
+              <option value="article">아티클</option>
+              <option value="campaign">캠페인</option>
+            </select>
+          </label>
+        </div>
         <p id="status" class="status" role="status"></p>
       </form>
     </header>

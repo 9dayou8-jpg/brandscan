@@ -13,6 +13,8 @@ let latestResult = null;
 const labels = { confirmed: '확인', partial: '일부 확인', suspicious: '의심', unknown: '미확인' };
 const priorityLabels = { high: '높음', medium: '중간', low: '낮음' };
 const areaLabels = { martech: 'MarTech', technical_seo: 'Technical SEO', geo: 'GEO · 콘텐츠' };
+const objectiveLabels = { brand_awareness: '브랜드 인지도', acquisition: '신규 고객 유입', conversion: '구매 전환', lead_generation: '리드 확보' };
+const pageTypeLabels = { homepage: '홈페이지', service: '서비스', product: '상품', landing: '랜딩', blog: '블로그', article: '아티클', campaign: '캠페인', unknown: '미분류' };
 
 function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -95,12 +97,15 @@ function switchTab(name) {
 form.addEventListener('submit', async event => {
   event.preventDefault();
   const url = new FormData(form).get('url');
+  const formData = new FormData(form);
+  const marketingObjective = formData.get('marketing_objective');
+  const pageType = formData.get('page_type');
   statusEl.textContent = '페이지를 분석하고 있습니다...'; statusEl.className = 'status loading'; results.hidden = true;
   try {
-    const response = await fetch(`${API_BASE}/api/analyze`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({url}) });
+    const response = await fetch(`${API_BASE}/api/analyze`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({url, marketing_objective: marketingObjective, page_type: pageType || null}) });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.detail || '분석에 실패했습니다.');
-    latestResult = payload; resultUrl.textContent = payload.final_url; analysisMeta.textContent = `HTTP ${payload.status_code} · HTML ${payload.html_size.toLocaleString()} bytes · 분석 완료`;
+    latestResult = payload; resultUrl.textContent = payload.final_url; const context = payload.analysis_metadata; analysisMeta.textContent = `HTTP ${payload.status_code} · HTML ${payload.html_size.toLocaleString()} bytes · ${pageTypeLabels[context.page_type.selected] || context.page_type.selected} · ${objectiveLabels[context.marketing_objective] || context.marketing_objective}`;
     renderSummary(payload); renderPriorities(payload.top_priorities); renderPanels(payload); switchTab('all'); results.hidden = false;
     statusEl.textContent = '분석이 완료되었습니다.'; statusEl.className = 'status success';
   } catch (error) { statusEl.textContent = error.message; statusEl.className = 'status error'; }
