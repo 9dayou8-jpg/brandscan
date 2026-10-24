@@ -50,7 +50,7 @@ def analyze(request: AnalyzeRequest) -> dict[str, object]:
     )
     martech = detect_martech(page.html)
     geo = extract_geo_facts(page.html)
-    issues = rank_issues(build_issues(technical_seo, martech, geo))
+    issues = rank_issues(build_issues(technical_seo, martech, geo, marketing_objective=request.marketing_objective))
     return {
         "url": page.requested_url,
         "final_url": page.final_url,
