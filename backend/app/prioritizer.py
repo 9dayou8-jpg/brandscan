@@ -1,8 +1,28 @@
 from __future__ import annotations
 
 
-def _issue(issue_id: str, area: str, title: str, evidence: str, recommendation: str, impact: int, urgency: int, effort: int, status: str = "confirmed") -> dict[str, object]:
-    score = impact * urgency * effort
+PRIORITY_FORMULA_VERSION = "0.3.0"
+PRIORITY_WEIGHTS = {"impact": 4, "urgency": 3, "ease": 1}
+
+
+def calculate_priority(*, impact: int, urgency: int, ease: int, marketing_objective: str) -> dict[str, object]:
+    factors = {"impact": impact, "urgency": urgency, "ease": ease}
+    if any(not isinstance(value, int) or value < 1 or value > 3 for value in factors.values()):
+        raise ValueError("impact, urgency, ease는 1~3점이어야 합니다.")
+    score = sum(factors[key] * PRIORITY_WEIGHTS[key] for key in factors)
+    return {
+        "formula": "(impact × 4) + (urgency × 3) + (ease × 1)",
+        "formula_version": PRIORITY_FORMULA_VERSION,
+        "weights": dict(PRIORITY_WEIGHTS),
+        "factors": factors,
+        "marketing_objective": marketing_objective,
+        "score": score,
+    }
+
+
+def _issue(issue_id: str, area: str, title: str, evidence: str, recommendation: str, impact: int, urgency: int, ease: int, status: str = "confirmed", marketing_objective: str = "acquisition") -> dict[str, object]:
+    priority = calculate_priority(impact=impact, urgency=urgency, ease=ease, marketing_objective=marketing_objective)
+    score = int(priority["score"])
     return {
         "id": issue_id,
         "area": area,
@@ -11,9 +31,10 @@ def _issue(issue_id: str, area: str, title: str, evidence: str, recommendation: 
         "problem": title,
         "evidence": evidence,
         "recommendation": recommendation,
-        "priority": "high" if score >= 8 else "medium" if score >= 4 else "low",
+        "priority": "high" if score >= 18 else "medium" if score >= 12 else "low",
         "score": score,
-        "score_reason": f"영향도 {impact} × 시급성 {urgency} × 실행 난이도 {effort} = {score}",
+        "priority_calculation": priority,
+        "score_reason": f"영향도 {impact} × 4 + 시급성 {urgency} × 3 + 개선 용이성 {ease} × 1 = {score}",
     }
 
 

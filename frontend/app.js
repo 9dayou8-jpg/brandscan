@@ -47,7 +47,7 @@ function renderPriorities(items) {
     <div class="rank">${index + 1}</div>
     <div><h3>${esc(item.title)} <span class="chevron">⌄</span></h3>
       <p class="issue-hint">클릭해서 문제의 근거와 개선 방향 보기</p>
-      <div class="issue-detail"><p><b>문제점</b> · ${esc(item.problem)}</p><p><b>발견 근거</b> · ${esc(item.evidence)}</p><p><b>개선 방향</b> · ${esc(item.recommendation)}</p></div>
+      <div class="issue-detail"><p><b>문제점</b> · ${esc(item.problem)}</p><p><b>발견 근거</b> · ${esc(item.evidence)}</p><p><b>개선 방향</b> · ${esc(item.recommendation)}</p><p><b>산정 근거</b> · ${esc(item.score_reason)}</p></div>
     </div>
     <div class="priority ${item.priority === 'high' ? 'p1' : 'p2'}">${esc(priorityLabels[item.priority] || item.priority)} · ${esc(areaLabels[item.area] || item.area)}</div>
   </article>`).join('');
